@@ -163,10 +163,18 @@
         </div>
       </section>
 
-      <!-- Graph placeholder — implemented in ticket 04 -->
-      <section class="graph-section">
-        <div class="graph-placeholder card" id="graph-placeholder">
-          <span class="graph-placeholder-text">📊 Portfolio graph — coming in next step</span>
+      <!-- Graph & Slider Section -->
+      <section class="graph-section card">
+        <div class="graph-container">
+          <canvas id="portfolio-chart"></canvas>
+        </div>
+        
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Retirement Age (Drawout Date)</span>
+            <span class="slider-value-display"><strong id="drawout-age-display">60</strong> years old</span>
+          </div>
+          <input type="range" id="drawoutAge-slider" min="31" max="99" value="60" step="1" class="custom-slider">
         </div>
       </section>
 
@@ -177,6 +185,8 @@
     <p>This calculator is for educational purposes only and does not constitute financial advice.</p>
   </footer>
 
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- App Logic Module -->
   <script type="module" src="js/app.js"></script>
 </body>

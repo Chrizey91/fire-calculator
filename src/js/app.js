@@ -2,14 +2,16 @@
  * app.js — UI wiring layer (v2)
  *
  * Reads the v2 input form, calls the pure simulate() engine, and
- * renders the four live-updating summary stats. No debounce — the
- * annual simulation completes well within a frame.
+ * renders the four live-updating summary stats and the interactive Chart.js graph.
  *
- * Default Drawout Age = min(currentAge + 30, 99), clamped so it
- * is always > currentAge. Replaced by a slider in ticket 04.
+ * Slider logic:
+ * - Spans currentAge + 1 to 99.
+ * - Dynamic constraints adjustment when currentAge input changes.
  */
 
 import { simulate } from './engine.js';
+
+let chartInstance = null;
 
 // ─── formatting ─────────────────────────────────────────────────────────────
 
@@ -40,21 +42,13 @@ function getNum(id, fallback = 0) {
 }
 
 /**
- * Compute the default Drawout Age placeholder used until ticket 04's slider.
- * Returns null when no valid drawout age exists (edge case: currentAge ≥ 99).
- */
-function defaultDrawoutAge(currentAge) {
-  const age = Math.min(currentAge + 30, 99);
-  return age > currentAge ? age : null;
-}
-
-/**
- * Read all v2 inputs from the DOM and return the engine input object
- * plus the active currency symbol.
+ * Read all v2 inputs from the DOM, using the retirement slider's value
+ * for the drawoutAge.
  */
 function readInputs() {
   const currentAge = getNum('currentAge', 30);
-  const drawoutAge = defaultDrawoutAge(currentAge);
+  const slider = document.getElementById('drawoutAge-slider');
+  const drawoutAge = slider ? parseInt(slider.value, 10) : Math.min(currentAge + 30, 99);
 
   return {
     drawoutAge,
@@ -69,7 +63,7 @@ function readInputs() {
       targetNetMonthlyIncome:     getNum('targetNetMonthlyIncome', 0),
       deductionRate:              getNum('deductionRate', 0) / 100,
       additionalRetirementIncome: getNum('additionalRetirementIncome', 0),
-      drawoutAge: drawoutAge ?? currentAge + 1, // fallback keeps engine valid
+      drawoutAge: drawoutAge,
     },
   };
 }
@@ -79,6 +73,30 @@ function readInputs() {
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
+}
+
+// ─── slider constraints ───────────────────────────────────────────────────────
+
+/**
+ * Synchronize slider ranges with the current age input.
+ */
+function updateSliderConstraints() {
+  const currentAge = getNum('currentAge', 30);
+  const slider = document.getElementById('drawoutAge-slider');
+  const display = document.getElementById('drawout-age-display');
+  if (!slider) return;
+
+  const newMin = currentAge + 1;
+  slider.min = newMin;
+
+  // Clamp slider value to the new range
+  if (parseInt(slider.value, 10) < newMin) {
+    slider.value = Math.min(Math.max(newMin, 60), 99);
+  }
+
+  if (display) {
+    display.textContent = slider.value;
+  }
 }
 
 // ─── stat rendering ──────────────────────────────────────────────────────────
@@ -113,30 +131,245 @@ function renderStats(result, currency) {
   }
 }
 
+// ─── chart rendering ─────────────────────────────────────────────────────────
+
+/**
+ * Render or update the Chart.js visualizer.
+ */
+function updateChart(yearByYear, fireNumber, currency) {
+  const ctx = document.getElementById('portfolio-chart')?.getContext('2d');
+  if (!ctx) return;
+
+  // Check if a Nominal/Real toggle exists or default to Real (inflation-deflated) terms.
+  // Real view is preferred to ground the user in today's purchasing power.
+  const toggleEl = document.getElementById('nominal-real-toggle');
+  const isReal = toggleEl ? toggleEl.value === 'real' : true;
+
+  // Multi-line labels to show age and calendar year under each tick.
+  const labels = yearByYear.map(y => [y.age.toString(), y.calendarYear.toString()]);
+
+  const portfolioData = yearByYear.map(y => ({
+    x: y.age,
+    y: isReal ? y.realPortfolio : y.nominalPortfolio,
+    phase: y.phase
+  }));
+
+  const withdrawalData = yearByYear.map(y => ({
+    x: y.age,
+    y: y.phase === 'drawout' ? (isReal ? y.realMonthlyWithdrawal : y.nominalMonthlyWithdrawal) : 0
+  }));
+
+  // FIRE target is scaled to Real or Nominal based on the toggle.
+  // The engine's fireNumber is a nominal amount required at drawoutAge.
+  // Real FIRE Number = Nominal FIRE Number / (1 + inflationRate)^yearsSinceCurrentAge.
+  // For a horizontal line across all ages, we plot the value at the drawoutAge in active terms.
+  const activeFireNumber = isReal 
+    ? (yearByYear.find(y => y.phase === 'drawout')?.realPortfolio ?? fireNumber)
+    : fireNumber;
+
+  const fireLineData = yearByYear.map(y => ({
+    x: y.age,
+    y: activeFireNumber
+  }));
+
+  if (chartInstance) {
+    chartInstance.data.labels = labels;
+    chartInstance.data.datasets[0].data = portfolioData;
+    chartInstance.data.datasets[1].data = withdrawalData;
+    chartInstance.data.datasets[2].data = fireLineData;
+
+    chartInstance.options.scales.y.title.text = `Portfolio Value (${currency})`;
+    chartInstance.options.scales.y1.title.text = `Monthly Withdrawal (${currency})`;
+
+    chartInstance.update();
+  } else {
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Portfolio Value',
+            data: portfolioData,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            yAxisID: 'y',
+            // Distinguish accumulation phase (solid blue) from drawout phase (dashed green)
+            segment: {
+              borderColor: (ctx) => {
+                const idx = ctx.p0.index;
+                const pt = ctx.chart.data.datasets[ctx.datasetIndex].data[idx];
+                return pt && pt.phase === 'accumulation' ? '#3b82f6' : '#10b981';
+              },
+              borderDash: (ctx) => {
+                const idx = ctx.p0.index;
+                const pt = ctx.chart.data.datasets[ctx.datasetIndex].data[idx];
+                return pt && pt.phase === 'accumulation' ? [] : [6, 6];
+              }
+            },
+            tension: 0.1
+          },
+          {
+            label: 'Monthly Withdrawal (Secondary Axis)',
+            data: withdrawalData,
+            fill: 'origin',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderColor: 'rgba(239, 68, 68, 0.4)',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            yAxisID: 'y1',
+            tension: 0.1
+          },
+          {
+            label: 'FIRE Target',
+            data: fireLineData,
+            borderColor: 'rgba(245, 158, 11, 0.6)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            yAxisID: 'y',
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#94a3b8',
+              font: {
+                family: 'Plus Jakarta Sans',
+                weight: '500'
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const datasetLabel = context.dataset.label || '';
+                const value = context.parsed.y;
+                return `${datasetLabel}: ${formatCurrency(value, currency)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#94a3b8',
+              font: {
+                family: 'Plus Jakarta Sans',
+                size: 10
+              },
+              maxRotation: 0
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            }
+          },
+          y: {
+            position: 'left',
+            min: 0,
+            title: {
+              display: true,
+              text: `Portfolio Value (${currency})`,
+              color: '#94a3b8',
+              font: {
+                family: 'Plus Jakarta Sans'
+              }
+            },
+            ticks: {
+              color: '#94a3b8',
+              font: {
+                family: 'Plus Jakarta Sans'
+              },
+              callback: (value) => formatCurrency(value, currency)
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            }
+          },
+          y1: {
+            position: 'right',
+            min: 0,
+            title: {
+              display: true,
+              text: `Monthly Withdrawal (${currency})`,
+              color: '#94a3b8',
+              font: {
+                family: 'Plus Jakarta Sans'
+              }
+            },
+            ticks: {
+              color: '#94a3b8',
+              font: {
+                family: 'Plus Jakarta Sans'
+              },
+              callback: (value) => formatCurrency(value, currency)
+            },
+            grid: {
+              drawOnChartArea: false
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
 // ─── main recalculate ────────────────────────────────────────────────────────
 
 function recalculate() {
-  const { engineInputs, currency, drawoutAge } = readInputs();
-
-  // Skip if no valid drawout window exists (age ≥ 99 edge case).
-  if (drawoutAge === null) return;
+  const { engineInputs, currency } = readInputs();
 
   const result = simulate(engineInputs);
   renderStats(result, currency);
+  updateChart(result.yearByYear, result.fireNumber, currency);
 }
 
 // ─── event wiring ────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.scenario-form');
+  const slider = document.getElementById('drawoutAge-slider');
+  const display = document.getElementById('drawout-age-display');
 
-  // Wire input + change on the form so both typing and select-changes trigger.
-  // No debounce — annual simulation is fast enough for immediate feedback.
+  // Initialize constraints
+  updateSliderConstraints();
+
+  // Recalculate on any input change
   if (form) {
-    form.addEventListener('input', recalculate);
-    form.addEventListener('change', recalculate);
+    form.addEventListener('input', () => {
+      updateSliderConstraints();
+      recalculate();
+    });
+    form.addEventListener('change', () => {
+      updateSliderConstraints();
+      recalculate();
+    });
   }
 
-  // Initial render on page load.
+  // Recalculate on slider drag
+  if (slider) {
+    slider.addEventListener('input', () => {
+      if (display) {
+        display.textContent = slider.value;
+      }
+      recalculate();
+    });
+  }
+
+  // Initial calculation
   recalculate();
 });
