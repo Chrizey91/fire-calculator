@@ -314,3 +314,29 @@ test('portfolioAtRetirement is the portfolio value entering the drawout phase', 
   // 50 accumulation years × 12000/yr = 600,000
   assert.ok(Math.abs(r.portfolioAtRetirement - 600_000) < 0.01);
 });
+
+test('inflation adjusts target monthly income starting from currentAge, not drawoutAge', () => {
+  // currentAge = 30, drawoutAge = 40 (10 years of accumulation inflation)
+  // targetNetMonthlyIncome = 1000 (12000/yr)
+  // inflationRate = 5%
+  // At age 40 (first year of retirement):
+  // Nominal target monthly withdrawal should be 1000 * (1.05)^10 = 1628.89
+  const r = simulate({
+    ...BASE,
+    currentAge: 30,
+    drawoutAge: 40,
+    targetNetMonthlyIncome: 1000,
+    inflationRate: 0.05,
+    currentPortfolioValue: 1e9, // huge portfolio
+    monthlySavings: 0,
+    roi: 0,
+  });
+
+  const age40 = r.yearByYear.find(y => y.age === 40);
+  const expectedNominalWithdrawal = 1000 * Math.pow(1.05, 10);
+  assert.ok(
+    Math.abs(age40.nominalMonthlyWithdrawal - expectedNominalWithdrawal) < 0.01,
+    `expected nominal withdrawal at age 40 to be around ${expectedNominalWithdrawal}, got ${age40.nominalMonthlyWithdrawal}`
+  );
+});
+

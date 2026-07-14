@@ -55,6 +55,7 @@ export function simulate(inputs) {
   // 1. Derive the FIRE Number by back-solving the Drawout Phase simulation.
   //    (See ADR-0002 — no static Safe Withdrawal Rate formula.)
   const fireNumber = computeFireNumber({
+    currentAge,
     drawoutAge,
     roi,
     inflationRate,
@@ -98,11 +99,11 @@ export function simulate(inputs) {
         portfolioAtRetirement = portfolio;
       }
 
-      const yearsSinceDrawout = age - drawoutAge;
-      const inflationFactorSinceDrawout = Math.pow(1 + inflationRate, yearsSinceDrawout);
+      const yearsSinceStart = age - currentAge;
+      const inflationFactor = Math.pow(1 + inflationRate, yearsSinceStart);
 
       // Inflation-adjust the nominal target to preserve today's purchasing power.
-      const nominalTargetNet = targetNetMonthlyIncome * 12 * inflationFactorSinceDrawout;
+      const nominalTargetNet = targetNetMonthlyIncome * 12 * inflationFactor;
 
       // Offset by net additional retirement income (pension, part-time work, etc.).
       const netNeededFromPortfolio = Math.max(
@@ -159,6 +160,7 @@ export function simulate(inputs) {
  * Does NOT apply the Math.max(0, …) floor so the binary search can find the exact threshold.
  */
 function isDrawoutSustainable(startingPortfolio, {
+  currentAge,
   drawoutAge,
   roi,
   inflationRate,
@@ -172,8 +174,10 @@ function isDrawoutSustainable(startingPortfolio, {
   let portfolio = startingPortfolio;
 
   for (let yearsSinceDrawout = 0; yearsSinceDrawout <= SIMULATION_END_AGE - drawoutAge; yearsSinceDrawout++) {
-    const inflationFactorSinceDrawout = Math.pow(1 + inflationRate, yearsSinceDrawout);
-    const nominalTargetNet = targetNetMonthlyIncome * 12 * inflationFactorSinceDrawout;
+    const age = drawoutAge + yearsSinceDrawout;
+    const yearsSinceStart = age - currentAge;
+    const inflationFactor = Math.pow(1 + inflationRate, yearsSinceStart);
+    const nominalTargetNet = targetNetMonthlyIncome * 12 * inflationFactor;
     const netNeededFromPortfolio = Math.max(0, nominalTargetNet - additionalRetirementIncome * 12);
     const grossAnnualWithdrawal = netNeededFromPortfolio / (1 - effectiveDeductionRate);
 
