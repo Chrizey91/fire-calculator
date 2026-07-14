@@ -128,46 +128,45 @@
         </div>
       </section>
 
-      <!-- Results section -->
-      <section class="results-section">
-        <div class="results-grid" id="results-cards-container">
-          
-          <!-- Scenario Result Summary Card -->
-          <div class="result-card card" id="result-card-scenario-1" data-id="scenario-1">
-            <div class="result-header">
-              <h3 class="result-scenario-name">Primary Scenario</h3>
-              <span class="status-badge status-sustainable">Sustainable</span>
-            </div>
+      <!-- Summary Stats Strip -->
+      <section class="stats-strip-section">
+        <div class="stats-strip card">
 
-            <div class="result-metrics">
-              <div class="metric-box">
-                <span class="metric-label">Target FIRE Number</span>
-                <span class="metric-value" id="fire-number-val-1">€900,000</span>
-              </div>
-              
-              <div class="metric-box">
-                <span class="metric-label">Years to FIRE</span>
-                <span class="metric-value" id="years-to-fire-val-1">18.5 years</span>
-              </div>
-
-              <div class="metric-box">
-                <span class="metric-label">Age at FIRE</span>
-                <span class="metric-value" id="age-at-fire-val-1">48</span>
-              </div>
-            </div>
-
-            <div class="growth-bar-container">
-              <div class="growth-labels">
-                <span>Contributions: <strong id="contributions-val-1">€270,000</strong></span>
-                <span>Growth: <strong id="growth-val-1">€630,000</strong></span>
-              </div>
-              <div class="progress-track">
-                <div class="progress-fill contributions-fill" id="contributions-fill-1" style="width: 30%;"></div>
-                <div class="progress-fill growth-fill" id="growth-fill-1" style="width: 70%;"></div>
-              </div>
-            </div>
+          <div class="stat-box" id="stat-fire-number-box">
+            <span class="stat-icon">🎯</span>
+            <span class="stat-label">FIRE Number</span>
+            <span class="stat-value" id="stat-fire-number">—</span>
+            <span class="stat-note">Portfolio needed at retirement</span>
           </div>
 
+          <div class="stat-box" id="stat-projected-fire-age-box">
+            <span class="stat-icon">📅</span>
+            <span class="stat-label">Projected FIRE Age</span>
+            <span class="stat-value" id="stat-projected-fire-age">—</span>
+            <span class="stat-note">When portfolio crosses FIRE Number</span>
+          </div>
+
+          <div class="stat-box" id="stat-portfolio-at-retirement-box">
+            <span class="stat-icon">💰</span>
+            <span class="stat-label">Portfolio at Retirement</span>
+            <span class="stat-value" id="stat-portfolio-at-retirement">—</span>
+            <span class="stat-note">Actual value at drawout date</span>
+          </div>
+
+          <div class="stat-box" id="stat-runway-box">
+            <span class="stat-icon">⚠️</span>
+            <span class="stat-label">Runway</span>
+            <span class="stat-value" id="stat-runway">—</span>
+            <span class="stat-note">Years until portfolio depletes</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Graph placeholder — implemented in ticket 04 -->
+      <section class="graph-section">
+        <div class="graph-placeholder card" id="graph-placeholder">
+          <span class="graph-placeholder-text">📊 Portfolio graph — coming in next step</span>
         </div>
       </section>
 

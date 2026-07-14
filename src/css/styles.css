@@ -509,6 +509,103 @@ input[type="number"]:focus, select:focus, input[type="text"]:focus {
   background: linear-gradient(90deg, #10b981, #34d399);
 }
 
+/* ── Stats Strip ───────────────────────────────────────────── */
+.stats-strip-section {
+  width: 100%;
+}
+
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding: 0;
+  overflow: hidden; /* clip child borders at card radius */
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 1.75rem 1.5rem;
+  border-right: 1px solid var(--border-color);
+  transition: background var(--transition-fast);
+}
+
+.stat-box:last-child {
+  border-right: none;
+}
+
+.stat-box:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-family: var(--font-title);
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
+  line-height: 1.1;
+  transition: color var(--transition-fast);
+}
+
+.stat-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Danger state for runway when portfolio depletes */
+.stat-box.runway-danger .stat-value {
+  color: var(--color-danger);
+}
+
+.stat-box.runway-danger .stat-icon {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* ── Graph Placeholder ─────────────────────────────────────── */
+.graph-section {
+  width: 100%;
+}
+
+.graph-placeholder {
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border-color);
+  background: transparent;
+  box-shadow: none;
+}
+
+.graph-placeholder:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.graph-placeholder-text {
+  font-size: 1rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-style: italic;
+}
+
 /* Footer Styling */
 .app-footer {
   text-align: center;
@@ -536,6 +633,19 @@ input[type="number"]:focus, select:focus, input[type="text"]:focus {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
+
+  .stats-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-box:nth-child(2) {
+    border-right: none;
+  }
+
+  .stat-box:nth-child(1),
+  .stat-box:nth-child(2) {
+    border-bottom: 1px solid var(--border-color);
+  }
 }
 
 @media (max-width: 600px) {
@@ -543,8 +653,21 @@ input[type="number"]:focus, select:focus, input[type="text"]:focus {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .app-content {
     padding: 1.5rem 1rem;
+  }
+
+  .stats-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-box {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .stat-box:last-child {
+    border-bottom: none;
   }
 }

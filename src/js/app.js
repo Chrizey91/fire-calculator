@@ -1,139 +1,142 @@
+/**
+ * app.js — UI wiring layer (v2)
+ *
+ * Reads the v2 input form, calls the pure simulate() engine, and
+ * renders the four live-updating summary stats. No debounce — the
+ * annual simulation completes well within a frame.
+ *
+ * Default Drawout Age = min(currentAge + 30, 99), clamped so it
+ * is always > currentAge. Replaced by a slider in ticket 04.
+ */
+
 import { simulate } from './engine.js';
 
-// Debounce helper
-function debounce(fn, delay) {
-  let timer = null;
-  return function(...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
+// ─── formatting ─────────────────────────────────────────────────────────────
 
-// Format currency helper
+/**
+ * Format a monetary amount with the active currency symbol.
+ * European symbols (€ ₣) go after the number; prefix otherwise.
+ */
 function formatCurrency(amount, symbol) {
-  const formatter = new Intl.NumberFormat(undefined, {
+  const formatted = new Intl.NumberFormat(undefined, {
     style: 'decimal',
-    maximumFractionDigits: 0
-  });
-  
-  // Custom alignment for symbols
-  if (symbol === '€' || symbol === '₣') {
-    return `${formatter.format(amount)} ${symbol}`;
-  }
-  return `${symbol}${formatter.format(amount)}`;
+    maximumFractionDigits: 0,
+  }).format(Math.round(amount));
+  return symbol === '€' || symbol === '₣'
+    ? `${formatted} ${symbol}`
+    : `${symbol}${formatted}`;
 }
 
-// Read inputs from a specific scenario container
-function readScenarioInputs(scenarioId) {
-  const container = document.querySelector(`.scenario-card[data-id="${scenarioId}"]`);
-  if (!container) return null;
+// ─── input reading ───────────────────────────────────────────────────────────
 
-  const getValue = (name) => {
-    const el = container.querySelector(`[name="${name}"]`);
-    return el ? parseFloat(el.value) : 0;
-  };
+/**
+ * Read a numeric input by id, returning fallback if missing/NaN.
+ */
+function getNum(id, fallback = 0) {
+  const el = document.getElementById(id);
+  if (!el) return fallback;
+  const v = parseFloat(el.value);
+  return Number.isFinite(v) ? v : fallback;
+}
+
+/**
+ * Compute the default Drawout Age placeholder used until ticket 04's slider.
+ * Returns null when no valid drawout age exists (edge case: currentAge ≥ 99).
+ */
+function defaultDrawoutAge(currentAge) {
+  const age = Math.min(currentAge + 30, 99);
+  return age > currentAge ? age : null;
+}
+
+/**
+ * Read all v2 inputs from the DOM and return the engine input object
+ * plus the active currency symbol.
+ */
+function readInputs() {
+  const currentAge = getNum('currentAge', 30);
+  const drawoutAge = defaultDrawoutAge(currentAge);
 
   return {
-    currentAge: getValue('currentAge'),
-    expectedLifespan: getValue('expectedLifespan'),
-    currentPortfolio: getValue('currentPortfolio'),
-    annualSavings: getValue('annualSavings'),
-    savingsGrowthRate: getValue('savingsGrowthRate') / 100,
-    annualExpenses: getValue('annualExpenses'),
-    inflationRate: getValue('inflationRate') / 100,
-    investmentReturn: getValue('investmentReturn') / 100,
-    withdrawalRate: getValue('withdrawalRate') / 100,
-    capitalGainsTax: getValue('capitalGainsTax') / 100,
-    withdrawalTax: getValue('withdrawalTax') / 100
+    drawoutAge,
+    currency: document.getElementById('currency-selector')?.value ?? '€',
+    engineInputs: {
+      currentAge,
+      currentPortfolioValue:      getNum('currentPortfolioValue', 0),
+      monthlySavings:             getNum('monthlySavings', 0),
+      savingsGrowthRate:          getNum('savingsGrowthRate', 0) / 100,
+      roi:                        getNum('roi', 0) / 100,
+      inflationRate:              getNum('inflationRate', 2) / 100,
+      targetNetMonthlyIncome:     getNum('targetNetMonthlyIncome', 0),
+      deductionRate:              getNum('deductionRate', 0) / 100,
+      additionalRetirementIncome: getNum('additionalRetirementIncome', 0),
+      drawoutAge: drawoutAge ?? currentAge + 1, // fallback keeps engine valid
+    },
   };
 }
 
-// Update UI results for a scenario
-function updateScenarioResults(scenarioId, results, currencySymbol) {
-  const card = document.getElementById(`result-card-${scenarioId}`);
-  if (!card) return;
+// ─── DOM helpers ─────────────────────────────────────────────────────────────
 
-  const num = scenarioId.split('-')[1] || '1';
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
 
-  // Select target elements
-  const fireNumberVal = document.getElementById(`fire-number-val-${num}`);
-  const yearsToFireVal = document.getElementById(`years-to-fire-val-${num}`);
-  const ageAtFireVal = document.getElementById(`age-at-fire-val-${num}`);
-  const contributionsVal = document.getElementById(`contributions-val-${num}`);
-  const growthVal = document.getElementById(`growth-val-${num}`);
-  const contributionsFill = document.getElementById(`contributions-fill-${num}`);
-  const growthFill = document.getElementById(`growth-fill-${num}`);
-  const statusBadge = card.querySelector('.status-badge');
+// ─── stat rendering ──────────────────────────────────────────────────────────
 
-  // Format and update text values
-  fireNumberVal.textContent = formatCurrency(results.fireNumber, currencySymbol);
-  
-  if (results.yearsToFire === null) {
-    yearsToFireVal.textContent = 'Never';
-    ageAtFireVal.textContent = 'N/A';
-  } else if (results.yearsToFire === 0) {
-    yearsToFireVal.textContent = 'Immediate';
-    ageAtFireVal.textContent = results.ageAtFire.toString();
+/**
+ * Push the four stats from a simulate() result into the DOM.
+ */
+function renderStats(result, currency) {
+  const fmt = (n) => formatCurrency(n, currency);
+
+  // 🎯 FIRE Number
+  setText('stat-fire-number', fmt(result.fireNumber));
+
+  // 📅 Projected FIRE Age
+  setText(
+    'stat-projected-fire-age',
+    result.projectedFireAge !== null ? String(result.projectedFireAge) : 'Not reached',
+  );
+
+  // 💰 Portfolio at Retirement
+  setText('stat-portfolio-at-retirement', fmt(result.portfolioAtRetirement));
+
+  // ⚠️ Runway
+  const runwayBox = document.getElementById('stat-runway-box');
+  if (result.runway === null) {
+    setText('stat-runway', 'Sustainable to 100');
+    runwayBox?.classList.remove('runway-danger');
   } else {
-    yearsToFireVal.textContent = `${results.yearsToFire} ${results.yearsToFire === 1 ? 'year' : 'years'}`;
-    ageAtFireVal.textContent = results.ageAtFire.toString();
-  }
-
-  contributionsVal.textContent = formatCurrency(results.totalContributions, currencySymbol);
-  growthVal.textContent = formatCurrency(results.totalGrowth, currencySymbol);
-
-  // Update progress bar
-  const total = results.totalContributions + results.totalGrowth;
-  if (total > 0) {
-    const contribPct = (results.totalContributions / total) * 100;
-    const growthPct = (results.totalGrowth / total) * 100;
-    contributionsFill.style.width = `${contribPct}%`;
-    growthFill.style.width = `${growthPct}%`;
-  } else {
-    contributionsFill.style.width = '0%';
-    growthFill.style.width = '0%';
-  }
-
-  // Update sustainability badge
-  if (results.isSustainable) {
-    statusBadge.textContent = 'Sustainable';
-    statusBadge.className = 'status-badge status-sustainable';
-  } else {
-    statusBadge.textContent = results.depletionAge 
-      ? `Runs out at age ${results.depletionAge}` 
-      : 'Unsustainable';
-    statusBadge.className = 'status-badge status-unsustainable';
+    const yrs = result.runway;
+    setText('stat-runway', `${yrs} yr${yrs !== 1 ? 's' : ''}`);
+    runwayBox?.classList.add('runway-danger');
   }
 }
 
-// Main calculation handler
-function calculate() {
-  const currencySelector = document.getElementById('currency-selector');
-  const currencySymbol = currencySelector ? currencySelector.value : '€';
+// ─── main recalculate ────────────────────────────────────────────────────────
 
-  const inputs = readScenarioInputs('scenario-1');
-  if (!inputs) return;
+function recalculate() {
+  const { engineInputs, currency, drawoutAge } = readInputs();
 
-  const results = simulate(inputs);
-  updateScenarioResults('scenario-1', results, currencySymbol);
+  // Skip if no valid drawout window exists (age ≥ 99 edge case).
+  if (drawoutAge === null) return;
+
+  const result = simulate(engineInputs);
+  renderStats(result, currency);
 }
 
-// Wire up events
+// ─── event wiring ────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.scenario-form');
-  const currencySelector = document.getElementById('currency-selector');
 
-  const debouncedCalculate = debounce(calculate, 300);
-
-  // Recalculate on any input change
+  // Wire input + change on the form so both typing and select-changes trigger.
+  // No debounce — annual simulation is fast enough for immediate feedback.
   if (form) {
-    form.addEventListener('input', debouncedCalculate);
+    form.addEventListener('input', recalculate);
+    form.addEventListener('change', recalculate);
   }
 
-  if (currencySelector) {
-    currencySelector.addEventListener('change', calculate);
-  }
-
-  // Initial calculation
-  calculate();
+  // Initial render on page load.
+  recalculate();
 });
