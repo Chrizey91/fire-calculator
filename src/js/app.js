@@ -329,6 +329,80 @@ function updateChart(yearByYear, fireNumber, currency) {
   }
 }
 
+// ─── localStorage persistence ────────────────────────────────────────────────
+
+function saveToLocalStorage() {
+  const inputs = {
+    currentAge: document.getElementById('currentAge')?.value,
+    currentPortfolioValue: document.getElementById('currentPortfolioValue')?.value,
+    monthlySavings: document.getElementById('monthlySavings')?.value,
+    savingsGrowthRate: document.getElementById('savingsGrowthRate')?.value,
+    roi: document.getElementById('roi')?.value,
+    inflationRate: document.getElementById('inflationRate')?.value,
+    targetNetMonthlyIncome: document.getElementById('targetNetMonthlyIncome')?.value,
+    deductionRate: document.getElementById('deductionRate')?.value,
+    additionalRetirementIncome: document.getElementById('additionalRetirementIncome')?.value,
+    currency: document.getElementById('currency-selector')?.value,
+    drawoutAge: document.getElementById('drawoutAge-slider')?.value,
+    isReal: document.querySelector('#nominal-real-toggle-container .btn-toggle.active')?.getAttribute('data-value') === 'real'
+  };
+
+  try {
+    localStorage.setItem('fire-calculator-v2', JSON.stringify(inputs));
+  } catch (e) {
+    console.error('Failed to save to localStorage', e);
+  }
+}
+
+function loadFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('fire-calculator-v2');
+    if (!raw) return;
+    const inputs = JSON.parse(raw);
+    if (!inputs || typeof inputs !== 'object') return;
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val !== undefined && val !== null) {
+        el.value = val;
+      }
+    };
+
+    setVal('currentAge', inputs.currentAge);
+    setVal('currentPortfolioValue', inputs.currentPortfolioValue);
+    setVal('monthlySavings', inputs.monthlySavings);
+    setVal('savingsGrowthRate', inputs.savingsGrowthRate);
+    setVal('roi', inputs.roi);
+    setVal('inflationRate', inputs.inflationRate);
+    setVal('targetNetMonthlyIncome', inputs.targetNetMonthlyIncome);
+    setVal('deductionRate', inputs.deductionRate);
+    setVal('additionalRetirementIncome', inputs.additionalRetirementIncome);
+    setVal('currency-selector', inputs.currency);
+
+    if (inputs.isReal !== undefined) {
+      const toggleContainer = document.getElementById('nominal-real-toggle-container');
+      if (toggleContainer) {
+        const buttons = toggleContainer.querySelectorAll('.btn-toggle');
+        buttons.forEach(btn => {
+          const val = btn.getAttribute('data-value');
+          if ((val === 'real' && inputs.isReal) || (val === 'nominal' && !inputs.isReal)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    const slider = document.getElementById('drawoutAge-slider');
+    if (slider && inputs.drawoutAge !== undefined && inputs.drawoutAge !== null) {
+      slider.value = inputs.drawoutAge;
+    }
+  } catch (e) {
+    console.error('Failed to load from localStorage', e);
+  }
+}
+
 // ─── main recalculate ────────────────────────────────────────────────────────
 
 function recalculate() {
@@ -337,6 +411,7 @@ function recalculate() {
   const result = simulate(engineInputs);
   renderStats(result, currency);
   updateChart(result.yearByYear, result.fireNumber, currency);
+  saveToLocalStorage();
 }
 
 // ─── event wiring ────────────────────────────────────────────────────────────
@@ -346,6 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const slider = document.getElementById('drawoutAge-slider');
   const display = document.getElementById('drawout-age-display');
   const toggleContainer = document.getElementById('nominal-real-toggle-container');
+
+  // Load persisted scenario from localStorage first
+  loadFromLocalStorage();
 
   // Initialize constraints
   updateSliderConstraints();
