@@ -165,6 +165,13 @@
 
       <!-- Graph & Slider Section -->
       <section class="graph-section card">
+        <div class="graph-header">
+          <h3 class="graph-title">Simulation Curve</h3>
+          <div class="toggle-group" id="nominal-real-toggle-container">
+            <button type="button" class="btn-toggle active" data-value="real">Real</button>
+            <button type="button" class="btn-toggle" data-value="nominal">Nominal</button>
+          </div>
+        </div>
         <div class="graph-container">
           <canvas id="portfolio-chart"></canvas>
         </div>

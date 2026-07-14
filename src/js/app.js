@@ -142,8 +142,8 @@ function updateChart(yearByYear, fireNumber, currency) {
 
   // Check if a Nominal/Real toggle exists or default to Real (inflation-deflated) terms.
   // Real view is preferred to ground the user in today's purchasing power.
-  const toggleEl = document.getElementById('nominal-real-toggle');
-  const isReal = toggleEl ? toggleEl.value === 'real' : true;
+  const activeToggleBtn = document.querySelector('#nominal-real-toggle-container .btn-toggle.active');
+  const isReal = activeToggleBtn ? activeToggleBtn.getAttribute('data-value') === 'real' : true;
 
   // Multi-line labels to show age and calendar year under each tick.
   const labels = yearByYear.map(y => [y.age.toString(), y.calendarYear.toString()]);
@@ -178,8 +178,9 @@ function updateChart(yearByYear, fireNumber, currency) {
     chartInstance.data.datasets[1].data = withdrawalData;
     chartInstance.data.datasets[2].data = fireLineData;
 
-    chartInstance.options.scales.y.title.text = `Portfolio Value (${currency})`;
-    chartInstance.options.scales.y1.title.text = `Monthly Withdrawal (${currency})`;
+    const viewStr = isReal ? 'Real' : 'Nominal';
+    chartInstance.options.scales.y.title.text = `Portfolio Value (${viewStr}, ${currency})`;
+    chartInstance.options.scales.y1.title.text = `Monthly Withdrawal (${viewStr}, ${currency})`;
 
     chartInstance.update();
   } else {
@@ -283,7 +284,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             min: 0,
             title: {
               display: true,
-              text: `Portfolio Value (${currency})`,
+              text: `Portfolio Value (${isReal ? 'Real' : 'Nominal'}, ${currency})`,
               color: '#94a3b8',
               font: {
                 family: 'Plus Jakarta Sans'
@@ -305,7 +306,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             min: 0,
             title: {
               display: true,
-              text: `Monthly Withdrawal (${currency})`,
+              text: `Monthly Withdrawal (${isReal ? 'Real' : 'Nominal'}, ${currency})`,
               color: '#94a3b8',
               font: {
                 family: 'Plus Jakarta Sans'
@@ -344,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.scenario-form');
   const slider = document.getElementById('drawoutAge-slider');
   const display = document.getElementById('drawout-age-display');
+  const toggleContainer = document.getElementById('nominal-real-toggle-container');
 
   // Initialize constraints
   updateSliderConstraints();
@@ -367,6 +369,18 @@ document.addEventListener('DOMContentLoaded', () => {
         display.textContent = slider.value;
       }
       recalculate();
+    });
+  }
+
+  // Recalculate on toggle click
+  if (toggleContainer) {
+    const buttons = toggleContainer.querySelectorAll('.btn-toggle');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        buttons.forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        recalculate();
+      });
     });
   }
 

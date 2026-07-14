@@ -587,6 +587,50 @@ input[type="number"]:focus, select:focus, input[type="text"]:focus {
   gap: 1.5rem;
 }
 
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: -0.5rem; /* pull container closer to graph */
+}
+
+.graph-title {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.toggle-group {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.btn-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-toggle:hover {
+  color: var(--text-main);
+}
+
+.btn-toggle.active {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  box-shadow: 0 2px 8px var(--color-primary-glow);
+}
+
 .graph-container {
   position: relative;
   width: 100%;
