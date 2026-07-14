@@ -178,7 +178,7 @@ function updateChart(yearByYear, fireNumber, currency) {
     chartInstance.data.datasets[1].data = withdrawalData;
     chartInstance.data.datasets[2].data = fireLineData;
 
-    const viewStr = isReal ? 'Real' : 'Nominal';
+    const viewStr = isReal ? 'Inflation Adjusted' : 'Gross';
     chartInstance.options.scales.y.title.text = `Portfolio Value (${viewStr}, ${currency})`;
     chartInstance.options.scales.y1.title.text = `Monthly Withdrawal (${viewStr}, ${currency})`;
 
@@ -284,7 +284,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             min: 0,
             title: {
               display: true,
-              text: `Portfolio Value (${isReal ? 'Real' : 'Nominal'}, ${currency})`,
+              text: `Portfolio Value (${isReal ? 'Inflation Adjusted' : 'Gross'}, ${currency})`,
               color: '#94a3b8',
               font: {
                 family: 'Plus Jakarta Sans'
@@ -306,7 +306,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             min: 0,
             title: {
               display: true,
-              text: `Monthly Withdrawal (${isReal ? 'Real' : 'Nominal'}, ${currency})`,
+              text: `Monthly Withdrawal (${isReal ? 'Inflation Adjusted' : 'Gross'}, ${currency})`,
               color: '#94a3b8',
               font: {
                 family: 'Plus Jakarta Sans'
