@@ -140,6 +140,8 @@ function updateChart(yearByYear, fireNumber, currency) {
   const ctx = document.getElementById('portfolio-chart')?.getContext('2d');
   if (!ctx) return;
 
+  const colors = getThemeColors();
+
   // Check if a Nominal/Real toggle exists or default to Real (inflation-deflated) terms.
   // Real view is preferred to ground the user in today's purchasing power.
   const activeToggleBtn = document.querySelector('#nominal-real-toggle-container .btn-toggle.active');
@@ -181,6 +183,15 @@ function updateChart(yearByYear, fireNumber, currency) {
     const viewStr = isReal ? 'Inflation Adjusted' : 'Gross';
     chartInstance.options.scales.y.title.text = `Portfolio Value (${viewStr}, ${currency})`;
     chartInstance.options.scales.y1.title.text = `Monthly Withdrawal (${viewStr}, ${currency})`;
+
+    chartInstance.options.scales.x.ticks.color = colors.text;
+    chartInstance.options.scales.x.grid.color = colors.grid;
+    chartInstance.options.scales.y.ticks.color = colors.text;
+    chartInstance.options.scales.y.grid.color = colors.grid;
+    chartInstance.options.scales.y.title.color = colors.text;
+    chartInstance.options.scales.y1.ticks.color = colors.text;
+    chartInstance.options.scales.y1.title.color = colors.text;
+    chartInstance.options.plugins.legend.labels.color = colors.legend;
 
     chartInstance.update();
   } else {
@@ -249,7 +260,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             display: true,
             position: 'top',
             labels: {
-              color: '#94a3b8',
+              color: colors.legend,
               font: {
                 family: 'Plus Jakarta Sans',
                 weight: '500'
@@ -269,7 +280,7 @@ function updateChart(yearByYear, fireNumber, currency) {
         scales: {
           x: {
             ticks: {
-              color: '#94a3b8',
+              color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans',
                 size: 10
@@ -277,7 +288,7 @@ function updateChart(yearByYear, fireNumber, currency) {
               maxRotation: 0
             },
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
+              color: colors.grid
             }
           },
           y: {
@@ -286,20 +297,20 @@ function updateChart(yearByYear, fireNumber, currency) {
             title: {
               display: true,
               text: `Portfolio Value (${isReal ? 'Inflation Adjusted' : 'Gross'}, ${currency})`,
-              color: '#94a3b8',
+              color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans'
               }
             },
             ticks: {
-              color: '#94a3b8',
+              color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans'
               },
               callback: (value) => formatCurrency(value, currency)
             },
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
+              color: colors.grid
             }
           },
           y1: {
@@ -308,13 +319,13 @@ function updateChart(yearByYear, fireNumber, currency) {
             title: {
               display: true,
               text: `Monthly Withdrawal (${isReal ? 'Inflation Adjusted' : 'Gross'}, ${currency})`,
-              color: '#94a3b8',
+              color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans'
               }
             },
             ticks: {
-              color: '#94a3b8',
+              color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans'
               },
@@ -515,12 +526,71 @@ function recalculate() {
   saveToLocalStorage();
 }
 
+// ─── Theme Toggle ────────────────────────────────────────────────────────────
+
+const SUN_SVG = `<svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`;
+const MOON_SVG = `<svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
+
+function initTheme() {
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (!toggleBtn) return;
+
+  let theme = localStorage.getItem('fire-calculator-theme');
+  if (!theme) {
+    theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  setTheme(theme);
+
+  toggleBtn.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  });
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('fire-calculator-theme', theme);
+
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.innerHTML = theme === 'light' ? MOON_SVG : SUN_SVG;
+    toggleBtn.setAttribute('title', theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+  }
+
+  if (chartInstance) {
+    const colors = getThemeColors();
+    chartInstance.options.scales.x.ticks.color = colors.text;
+    chartInstance.options.scales.x.grid.color = colors.grid;
+    chartInstance.options.scales.y.ticks.color = colors.text;
+    chartInstance.options.scales.y.grid.color = colors.grid;
+    chartInstance.options.scales.y.title.color = colors.text;
+    chartInstance.options.scales.y1.ticks.color = colors.text;
+    chartInstance.options.scales.y1.title.color = colors.text;
+    chartInstance.options.plugins.legend.labels.color = colors.legend;
+    chartInstance.update();
+  }
+}
+
+function getThemeColors() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    text: isDark ? '#94a3b8' : '#475569',
+    grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+    legend: isDark ? '#94a3b8' : '#475569'
+  };
+}
+
 // ─── event wiring ────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.scenario-form');
   const slider = document.getElementById('drawoutAge-slider');
   const display = document.getElementById('drawout-age-display');
+
+  // Initialize light/dark theme toggle
+  initTheme();
   const toggleContainer = document.getElementById('nominal-real-toggle-container');
 
   // Load scenario: URL hash overrides localStorage
