@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node.js / JS
+node_modules/
+.npm/
+npm-debug.log*
+.eslintcache
+
