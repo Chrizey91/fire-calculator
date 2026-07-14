@@ -38,23 +38,6 @@
     <div class="content-container">
       
       <!-- Top-to-bottom layout -->
-      <!-- Global Controls (placeholder for Ticket 05) -->
-      <section class="global-settings card">
-        <div class="global-settings-row">
-          <div class="input-group">
-            <label for="currency-selector">Currency</label>
-            <select id="currency-selector" class="form-select">
-              <option value="$">USD ($)</option>
-              <option value="€" selected>EUR (€)</option>
-              <option value="£">GBP (£)</option>
-              <option value="₣">CHF (₣)</option>
-              <option value="A$">AUD (A$)</option>
-              <option value="C$">CAD (C$)</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
       <!-- Scenarios Grid -->
       <section class="scenarios-section">
         <div class="scenarios-grid" id="scenarios-container">
@@ -64,7 +47,7 @@
             <div class="scenario-header">
               <div class="scenario-title-group">
                 <span class="color-indicator" style="background-color: var(--color-primary);"></span>
-                <input type="text" class="scenario-name-input" value="Primary Scenario" title="Scenario Name">
+                <span class="scenario-name-input" style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 600;">Plan Settings</span>
               </div>
             </div>
 
@@ -72,66 +55,73 @@
               <div class="form-section-title">Personal Settings</div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="currentAge-1">Current Age</label>
-                  <input type="number" id="currentAge-1" name="currentAge" value="30" min="0" max="120" step="1" required>
+                  <label for="currentAge">Current Age</label>
+                  <input type="number" id="currentAge" name="currentAge" value="30" min="1" max="99" step="1" required>
                 </div>
                 <div class="input-group">
-                  <label for="expectedLifespan-1">Expected Lifespan</label>
-                  <input type="number" id="expectedLifespan-1" name="expectedLifespan" value="85" min="1" max="150" step="1" required>
+                  <label for="currentPortfolioValue">Current Portfolio Value</label>
+                  <input type="number" id="currentPortfolioValue" name="currentPortfolioValue" value="50000" min="0" step="1000" required>
                 </div>
               </div>
 
-              <div class="form-section-title">Financial Accumulation</div>
+              <div class="form-section-title">Accumulation Phase</div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="currentPortfolio-1">Current Portfolio</label>
-                  <input type="number" id="currentPortfolio-1" name="currentPortfolio" value="50000" min="0" step="1000" required>
+                  <label for="monthlySavings">Monthly Savings</label>
+                  <input type="number" id="monthlySavings" name="monthlySavings" value="1000" min="0" step="100" required>
+                </div>
+                <div class="input-group">
+                  <label for="savingsGrowthRate">Savings Growth Rate (%)</label>
+                  <input type="number" id="savingsGrowthRate" name="savingsGrowthRate" value="0" min="-50" max="100" step="0.1" required>
                 </div>
               </div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="annualSavings-1">Annual Savings</label>
-                  <input type="number" id="annualSavings-1" name="annualSavings" value="15000" min="0" step="500" required>
-                </div>
-                <div class="input-group">
-                  <label for="savingsGrowthRate-1">Savings Growth Rate (%)</label>
-                  <input type="number" id="savingsGrowthRate-1" name="savingsGrowthRate" value="2" min="-50" max="100" step="0.5" required>
-                </div>
-              </div>
-
-              <div class="form-section-title">Retirement Phase</div>
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="annualExpenses-1">Annual Expenses (Today's Value)</label>
-                  <input type="number" id="annualExpenses-1" name="annualExpenses" value="36000" min="0" step="500" required>
-                </div>
-                <div class="input-group">
-                  <label for="withdrawalRate-1">Safe Withdrawal Rate (%)</label>
-                  <input type="number" id="withdrawalRate-1" name="withdrawalRate" value="4" min="0.1" max="20" step="0.1" required>
+                  <label for="roi">Annual ROI (%)</label>
+                  <input type="number" id="roi" name="roi" value="7" min="-50" max="50" step="0.1" required>
                 </div>
               </div>
 
-              <div class="form-section-title">Market & Tax Rates</div>
+              <div class="form-section-title">Retirement Target</div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="investmentReturn-1">Expected Annual Return (%)</label>
-                  <input type="number" id="investmentReturn-1" name="investmentReturn" value="7" min="-20" max="30" step="0.1" required>
+                  <label for="targetNetMonthlyIncome">Target Net Monthly Income (Today's Value)</label>
+                  <input type="number" id="targetNetMonthlyIncome" name="targetNetMonthlyIncome" value="3000" min="0" step="100" required>
                 </div>
                 <div class="input-group">
-                  <label for="inflationRate-1">Expected Inflation Rate (%)</label>
-                  <input type="number" id="inflationRate-1" name="inflationRate" value="2" min="-10" max="50" step="0.1" required>
+                  <label for="deductionRate">Deduction Rate (%)</label>
+                  <input type="number" id="deductionRate" name="deductionRate" value="0" min="0" max="100" step="0.1" required>
                 </div>
               </div>
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="capitalGainsTax-1">Capital Gains Tax (%)</label>
-                  <input type="number" id="capitalGainsTax-1" name="capitalGainsTax" value="15" min="0" max="100" step="0.5" required>
+
+              <details class="advanced-settings-details">
+                <summary>Advanced Settings</summary>
+                <div class="advanced-settings-content">
+                  <div class="form-row">
+                    <div class="input-group">
+                      <label for="inflationRate">Expected Inflation Rate (%)</label>
+                      <input type="number" id="inflationRate" name="inflationRate" value="2" min="-10" max="50" step="0.1" required>
+                    </div>
+                    <div class="input-group">
+                      <label for="additionalRetirementIncome">Additional Retirement Income (Net/Month)</label>
+                      <input type="number" id="additionalRetirementIncome" name="additionalRetirementIncome" value="0" min="0" step="100" required>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="input-group">
+                      <label for="currency-selector">Currency</label>
+                      <select id="currency-selector" name="currency" class="form-select">
+                        <option value="$">USD ($)</option>
+                        <option value="€" selected>EUR (€)</option>
+                        <option value="£">GBP (£)</option>
+                        <option value="₣">CHF (₣)</option>
+                        <option value="A$">AUD (A$)</option>
+                        <option value="C$">CAD (C$)</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div class="input-group">
-                  <label for="withdrawalTax-1">Withdrawal Tax (%)</label>
-                  <input type="number" id="withdrawalTax-1" name="withdrawalTax" value="15" min="0" max="100" step="0.5" required>
-                </div>
-              </div>
+              </details>
             </form>
           </div>
 

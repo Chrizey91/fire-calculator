@@ -271,6 +271,51 @@ body {
   color: var(--text-muted);
 }
 
+/* Collapsible Advanced Settings */
+.advanced-settings-details {
+  margin-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1rem;
+}
+
+.advanced-settings-details summary {
+  cursor: pointer;
+  font-family: var(--font-title);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none; /* Hide default arrow */
+}
+
+.advanced-settings-details summary::-webkit-details-marker {
+  display: none; /* Hide default arrow */
+}
+
+.advanced-settings-details summary::before {
+  content: '▼';
+  font-size: 0.75rem;
+  transition: transform var(--transition-fast);
+  display: inline-block;
+  transform: rotate(-90deg);
+}
+
+.advanced-settings-details[open] summary::before {
+  transform: rotate(0deg);
+}
+
+.advanced-settings-content {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 /* Custom Styled Inputs */
 input[type="number"], select, input[type="text"] {
   width: 100%;
