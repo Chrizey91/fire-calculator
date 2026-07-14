@@ -329,6 +329,106 @@ function updateChart(yearByYear, fireNumber, currency) {
   }
 }
 
+// ─── URL hash sharing ────────────────────────────────────────────────────────
+
+function copyShareLink() {
+  const inputs = {
+    currentAge: document.getElementById('currentAge')?.value,
+    currentPortfolioValue: document.getElementById('currentPortfolioValue')?.value,
+    monthlySavings: document.getElementById('monthlySavings')?.value,
+    savingsGrowthRate: document.getElementById('savingsGrowthRate')?.value,
+    roi: document.getElementById('roi')?.value,
+    inflationRate: document.getElementById('inflationRate')?.value,
+    targetNetMonthlyIncome: document.getElementById('targetNetMonthlyIncome')?.value,
+    deductionRate: document.getElementById('deductionRate')?.value,
+    additionalRetirementIncome: document.getElementById('additionalRetirementIncome')?.value,
+    currency: document.getElementById('currency-selector')?.value,
+    drawoutAge: document.getElementById('drawoutAge-slider')?.value,
+    isReal: document.querySelector('#nominal-real-toggle-container .btn-toggle.active')?.getAttribute('data-value') === 'real'
+  };
+
+  try {
+    const serialized = JSON.stringify(inputs);
+    const encoded = btoa(unescape(encodeURIComponent(serialized)));
+    window.location.hash = encoded;
+
+    const fullUrl = window.location.href;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      const btn = document.getElementById('share-btn');
+      if (btn) {
+        const originalTitle = btn.getAttribute('title');
+        btn.setAttribute('title', 'Link copied!');
+        
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style="font-size: 0.8rem; font-weight: 600; margin-left: 0.25rem; color: #10b981;">Copied!</span>
+        `;
+        
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.setAttribute('title', originalTitle);
+        }, 2000);
+      }
+    });
+  } catch (e) {
+    console.error('Failed to create share link', e);
+  }
+}
+
+function loadFromHash() {
+  try {
+    const hash = window.location.hash.substring(1);
+    if (!hash) return false;
+
+    const decoded = decodeURIComponent(escape(atob(hash)));
+    const inputs = JSON.parse(decoded);
+    if (!inputs || typeof inputs !== 'object') return false;
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val !== undefined && val !== null) {
+        el.value = val;
+      }
+    };
+
+    setVal('currentAge', inputs.currentAge);
+    setVal('currentPortfolioValue', inputs.currentPortfolioValue);
+    setVal('monthlySavings', inputs.monthlySavings);
+    setVal('savingsGrowthRate', inputs.savingsGrowthRate);
+    setVal('roi', inputs.roi);
+    setVal('inflationRate', inputs.inflationRate);
+    setVal('targetNetMonthlyIncome', inputs.targetNetMonthlyIncome);
+    setVal('deductionRate', inputs.deductionRate);
+    setVal('additionalRetirementIncome', inputs.additionalRetirementIncome);
+    setVal('currency-selector', inputs.currency);
+
+    if (inputs.isReal !== undefined) {
+      const toggleContainer = document.getElementById('nominal-real-toggle-container');
+      if (toggleContainer) {
+        const buttons = toggleContainer.querySelectorAll('.btn-toggle');
+        buttons.forEach(btn => {
+          const val = btn.getAttribute('data-value');
+          if ((val === 'real' && inputs.isReal) || (val === 'nominal' && !inputs.isReal)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    const slider = document.getElementById('drawoutAge-slider');
+    if (slider && inputs.drawoutAge !== undefined && inputs.drawoutAge !== null) {
+      slider.value = inputs.drawoutAge;
+    }
+    return true;
+  } catch (e) {
+    console.error('Failed to load from hash', e);
+    return false;
+  }
+}
+
 // ─── localStorage persistence ────────────────────────────────────────────────
 
 function saveToLocalStorage() {
@@ -422,8 +522,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const display = document.getElementById('drawout-age-display');
   const toggleContainer = document.getElementById('nominal-real-toggle-container');
 
-  // Load persisted scenario from localStorage first
-  loadFromLocalStorage();
+  // Load scenario: URL hash overrides localStorage
+  if (!loadFromHash()) {
+    loadFromLocalStorage();
+  }
+
+  // Wire share button click
+  const shareBtn = document.getElementById('share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', copyShareLink);
+  }
 
   // Initialize constraints
   updateSliderConstraints();
