@@ -65,17 +65,17 @@ export function simulate(inputs) {
     let gains = 0;
     let taxes = 0;
 
+    // Calculate returns and taxes first
+    gains = startBalance * investmentReturn;
+    if (gains > 0) {
+      taxes = gains * capitalGainsTax;
+    }
+    totalGrowth += gains;
+    totalTaxes += taxes;
+
     if (phase === 'accumulation') {
       savings = activeSavings;
       totalContributions += savings;
-
-      gains = startBalance * investmentReturn;
-      if (gains > 0) {
-        taxes = gains * capitalGainsTax;
-      }
-      totalGrowth += gains;
-      totalTaxes += taxes;
-
       portfolio = startBalance + savings + gains - taxes;
 
       // Grow the savings rate for the next year
@@ -84,14 +84,6 @@ export function simulate(inputs) {
       // Retirement (drawdown) phase
       const denominator = 1 - withdrawalTax;
       withdrawal = denominator > 0 ? expensesThisYear / denominator : expensesThisYear;
-
-      gains = startBalance * investmentReturn;
-      if (gains > 0) {
-        taxes = gains * capitalGainsTax;
-      }
-      totalGrowth += gains;
-      totalTaxes += taxes;
-
       portfolio = startBalance + gains - taxes - withdrawal;
     }
 
