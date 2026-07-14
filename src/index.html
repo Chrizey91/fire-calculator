@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculate and visualize your path to Financial Independence, Retire Early (FIRE) with dynamic scenarios and country-based defaults.">
+  <title>FIRE Calculator — Path to Financial Independence</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Background Glows -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo">
+        <span class="logo-icon">🔥</span>
+        <h1>FIRE Calculator</h1>
+      </div>
+      <div class="header-actions">
+        <!-- Placeholder theme toggle button (Ticket 07 implementation later) -->
+        <button id="theme-toggle" class="btn-icon" aria-label="Toggle theme" title="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div class="content-container">
+      
+      <!-- Top-to-bottom layout -->
+      <!-- Global Controls (placeholder for Ticket 05) -->
+      <section class="global-settings card">
+        <div class="global-settings-row">
+          <div class="input-group">
+            <label for="currency-selector">Currency</label>
+            <select id="currency-selector" class="form-select">
+              <option value="$">USD ($)</option>
+              <option value="€" selected>EUR (€)</option>
+              <option value="£">GBP (£)</option>
+              <option value="₣">CHF (₣)</option>
+              <option value="A$">AUD (A$)</option>
+              <option value="C$">CAD (C$)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scenarios Grid -->
+      <section class="scenarios-section">
+        <div class="scenarios-grid" id="scenarios-container">
+          
+          <!-- Single Scenario Input Card -->
+          <div class="scenario-card card" data-id="scenario-1">
+            <div class="scenario-header">
+              <div class="scenario-title-group">
+                <span class="color-indicator" style="background-color: var(--color-primary);"></span>
+                <input type="text" class="scenario-name-input" value="Primary Scenario" title="Scenario Name">
+              </div>
+            </div>
+
+            <form class="scenario-form">
+              <div class="form-section-title">Personal Settings</div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="currentAge-1">Current Age</label>
+                  <input type="number" id="currentAge-1" name="currentAge" value="30" min="0" max="120" step="1" required>
+                </div>
+                <div class="input-group">
+                  <label for="expectedLifespan-1">Expected Lifespan</label>
+                  <input type="number" id="expectedLifespan-1" name="expectedLifespan" value="85" min="1" max="150" step="1" required>
+                </div>
+              </div>
+
+              <div class="form-section-title">Financial Accumulation</div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="currentPortfolio-1">Current Portfolio</label>
+                  <input type="number" id="currentPortfolio-1" name="currentPortfolio" value="50000" min="0" step="1000" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="annualSavings-1">Annual Savings</label>
+                  <input type="number" id="annualSavings-1" name="annualSavings" value="15000" min="0" step="500" required>
+                </div>
+                <div class="input-group">
+                  <label for="savingsGrowthRate-1">Savings Growth Rate (%)</label>
+                  <input type="number" id="savingsGrowthRate-1" name="savingsGrowthRate" value="2" min="-50" max="100" step="0.5" required>
+                </div>
+              </div>
+
+              <div class="form-section-title">Retirement Phase</div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="annualExpenses-1">Annual Expenses (Today's Value)</label>
+                  <input type="number" id="annualExpenses-1" name="annualExpenses" value="36000" min="0" step="500" required>
+                </div>
+                <div class="input-group">
+                  <label for="withdrawalRate-1">Safe Withdrawal Rate (%)</label>
+                  <input type="number" id="withdrawalRate-1" name="withdrawalRate" value="4" min="0.1" max="20" step="0.1" required>
+                </div>
+              </div>
+
+              <div class="form-section-title">Market & Tax Rates</div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="investmentReturn-1">Expected Annual Return (%)</label>
+                  <input type="number" id="investmentReturn-1" name="investmentReturn" value="7" min="-20" max="30" step="0.1" required>
+                </div>
+                <div class="input-group">
+                  <label for="inflationRate-1">Expected Inflation Rate (%)</label>
+                  <input type="number" id="inflationRate-1" name="inflationRate" value="2" min="-10" max="50" step="0.1" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="capitalGainsTax-1">Capital Gains Tax (%)</label>
+                  <input type="number" id="capitalGainsTax-1" name="capitalGainsTax" value="15" min="0" max="100" step="0.5" required>
+                </div>
+                <div class="input-group">
+                  <label for="withdrawalTax-1">Withdrawal Tax (%)</label>
+                  <input type="number" id="withdrawalTax-1" name="withdrawalTax" value="15" min="0" max="100" step="0.5" required>
+                </div>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Results section -->
+      <section class="results-section">
+        <div class="results-grid" id="results-cards-container">
+          
+          <!-- Scenario Result Summary Card -->
+          <div class="result-card card" id="result-card-scenario-1" data-id="scenario-1">
+            <div class="result-header">
+              <h3 class="result-scenario-name">Primary Scenario</h3>
+              <span class="status-badge status-sustainable">Sustainable</span>
+            </div>
+
+            <div class="result-metrics">
+              <div class="metric-box">
+                <span class="metric-label">Target FIRE Number</span>
+                <span class="metric-value" id="fire-number-val-1">€900,000</span>
+              </div>
+              
+              <div class="metric-box">
+                <span class="metric-label">Years to FIRE</span>
+                <span class="metric-value" id="years-to-fire-val-1">18.5 years</span>
+              </div>
+
+              <div class="metric-box">
+                <span class="metric-label">Age at FIRE</span>
+                <span class="metric-value" id="age-at-fire-val-1">48</span>
+              </div>
+            </div>
+
+            <div class="growth-bar-container">
+              <div class="growth-labels">
+                <span>Contributions: <strong id="contributions-val-1">€270,000</strong></span>
+                <span>Growth: <strong id="growth-val-1">€630,000</strong></span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill contributions-fill" id="contributions-fill-1" style="width: 30%;"></div>
+                <div class="progress-fill growth-fill" id="growth-fill-1" style="width: 70%;"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>This calculator is for educational purposes only and does not constitute financial advice.</p>
+  </footer>
+
+  <!-- App Logic Module -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
