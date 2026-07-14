@@ -192,6 +192,7 @@ function updateChart(yearByYear, fireNumber, currency) {
           {
             label: 'Portfolio Value',
             data: portfolioData,
+            borderColor: '#10b981',
             borderWidth: 3,
             pointRadius: 0,
             pointHoverRadius: 6,
