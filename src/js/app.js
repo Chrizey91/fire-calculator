@@ -702,20 +702,81 @@ function initTooltips() {
   });
 }
 
-// ─── language selector wiring ────────────────────────────────────────────────
+// ─── language dropdown wiring ─────────────────────────────────────────────────
+
+const LANG_META = {
+  en: { flag: '🇬🇧', code: 'EN' },
+  de: { flag: '🇩🇪', code: 'DE' },
+  fr: { flag: '🇫🇷', code: 'FR' },
+  es: { flag: '🇪🇸', code: 'ES' },
+};
+
+/** Update the trigger button's flag and code to reflect the active locale. */
+function syncDropdownTrigger(locale) {
+  const meta = LANG_META[locale];
+  if (!meta) return;
+  const flagEl = document.getElementById('lang-flag');
+  const codeEl = document.getElementById('lang-code');
+  if (flagEl) flagEl.textContent = meta.flag;
+  if (codeEl) codeEl.textContent = meta.code;
+
+  // Sync hidden select too (for share-link serialisation)
+  const sel = document.getElementById('lang-selector');
+  if (sel) sel.value = locale;
+
+  // Mark the active option in the listbox
+  document.querySelectorAll('.lang-option').forEach(opt => {
+    opt.classList.toggle('lang-option--active', opt.dataset.value === locale);
+  });
+}
+
+function openLangDropdown() {
+  const dd = document.getElementById('lang-dropdown');
+  if (!dd) return;
+  dd.setAttribute('aria-expanded', 'true');
+}
+
+function closeLangDropdown() {
+  const dd = document.getElementById('lang-dropdown');
+  if (!dd) return;
+  dd.setAttribute('aria-expanded', 'false');
+}
 
 function initLanguageSelector() {
-  const sel = document.getElementById('lang-selector');
-  if (!sel) return;
+  const trigger = document.getElementById('lang-dropdown-trigger');
+  const dropdown = document.getElementById('lang-dropdown');
+  if (!trigger || !dropdown) return;
 
-  // Set the selector to the persisted/loaded locale
-  sel.value = getLocale();
+  // Sync trigger display to the currently loaded locale
+  syncDropdownTrigger(getLocale());
 
-  sel.addEventListener('change', () => {
-    setLocale(sel.value);
+  // Toggle open / close
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.getAttribute('aria-expanded') === 'true';
+    isOpen ? closeLangDropdown() : openLangDropdown();
+  });
+
+  // Select a language
+  document.getElementById('lang-dropdown-menu')?.addEventListener('click', (e) => {
+    const opt = e.target.closest('.lang-option[data-value]');
+    if (!opt) return;
+    const locale = opt.dataset.value;
+    closeLangDropdown();
+    setLocale(locale);
+    syncDropdownTrigger(locale);
     applyTranslations();
-    // Re-run recalculate so chart labels pick up new locale
     recalculate();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) closeLangDropdown();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLangDropdown();
   });
 }
 
@@ -739,11 +800,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadFromLocalStorage();
   }
 
-  // Apply locale from lang-selector (set by loadFromHash / persisted value)
-  const langSel = document.getElementById('lang-selector');
-  if (langSel && langSel.value) {
-    setLocale(langSel.value);
-  }
+  // Apply locale from persisted value — hidden select isn't interactive so just use getLocale()
+  syncDropdownTrigger(getLocale());
 
   // Apply all translations
   applyTranslations();

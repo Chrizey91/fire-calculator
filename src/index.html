@@ -26,13 +26,25 @@
         <h1 id="app-title" data-i18n="header.title">FIRE Calculator</h1>
       </div>
       <div class="header-actions">
-        <!-- Language selector -->
-        <div class="lang-selector-wrap">
-          <select id="lang-selector" class="lang-selector" aria-label="Language">
-            <option value="en">🇬🇧 EN</option>
-            <option value="de">🇩🇪 DE</option>
-            <option value="fr">🇫🇷 FR</option>
-            <option value="es">🇪🇸 ES</option>
+        <!-- Language selector (custom dropdown) -->
+        <div class="lang-dropdown" id="lang-dropdown" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+          <button type="button" class="btn-icon lang-dropdown-trigger" id="lang-dropdown-trigger" aria-label="Language">
+            <span class="lang-flag" id="lang-flag">🇬🇧</span>
+            <span class="lang-code" id="lang-code">EN</span>
+            <svg class="lang-chevron" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="lang-dropdown-menu" id="lang-dropdown-menu" role="listbox" aria-label="Language">
+            <li class="lang-option lang-option--active" role="option" data-value="en" tabindex="-1"><span>🇬🇧</span> EN</li>
+            <li class="lang-option" role="option" data-value="de" tabindex="-1"><span>🇩🇪</span> DE</li>
+            <li class="lang-option" role="option" data-value="fr" tabindex="-1"><span>🇫🇷</span> FR</li>
+            <li class="lang-option" role="option" data-value="es" tabindex="-1"><span>🇪🇸</span> ES</li>
+          </ul>
+          <!-- Hidden native select kept for JS compatibility -->
+          <select id="lang-selector" aria-hidden="true" style="display:none">
+            <option value="en">EN</option>
+            <option value="de">DE</option>
+            <option value="fr">FR</option>
+            <option value="es">ES</option>
           </select>
         </div>
         <!-- GitHub repo link -->
