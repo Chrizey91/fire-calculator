@@ -10,6 +10,7 @@
  */
 
 import { simulate } from './engine.js';
+import { t, setLocale, loadLocale, getLocale } from './i18n.js';
 
 let chartInstance = null;
 
@@ -106,6 +107,7 @@ function updateSliderConstraints() {
  */
 function renderStats(result, currency) {
   const fmt = (n) => formatCurrency(n, currency);
+  const tr = t();
 
   // 🎯 FIRE Number
   setText('stat-fire-number', fmt(result.fireNumber));
@@ -113,7 +115,7 @@ function renderStats(result, currency) {
   // 📅 Projected FIRE Age
   setText(
     'stat-projected-fire-age',
-    result.projectedFireAge !== null ? String(result.projectedFireAge) : 'Not reached',
+    result.projectedFireAge !== null ? String(result.projectedFireAge) : tr.stats.notReached,
   );
 
   // 💰 Portfolio at Retirement
@@ -122,11 +124,11 @@ function renderStats(result, currency) {
   // ⚠️ Runway
   const runwayBox = document.getElementById('stat-runway-box');
   if (result.runway === null) {
-    setText('stat-runway', 'Sustainable to 100');
+    setText('stat-runway', tr.stats.sustainableTo100);
     runwayBox?.classList.remove('runway-danger');
   } else {
     const yrs = result.runway;
-    setText('stat-runway', `${yrs} yr${yrs !== 1 ? 's' : ''}`);
+    setText('stat-runway', tr.stats.years(yrs));
     runwayBox?.classList.add('runway-danger');
   }
 }
@@ -141,11 +143,14 @@ function updateChart(yearByYear, fireNumber, currency) {
   if (!ctx) return;
 
   const colors = getThemeColors();
+  const tr = t();
 
   // Check if a Nominal/Real toggle exists or default to Real (inflation-deflated) terms.
   // Real view is preferred to ground the user in today's purchasing power.
   const activeToggleBtn = document.querySelector('#nominal-real-toggle-container .btn-toggle.active');
   const isReal = activeToggleBtn ? activeToggleBtn.getAttribute('data-value') === 'real' : true;
+
+  const viewStr = isReal ? tr.graph.inflationAdjusted : tr.graph.gross;
 
   // Multi-line labels to show age and calendar year under each tick.
   const labels = yearByYear.map(y => [y.age.toString(), y.calendarYear.toString()]);
@@ -165,7 +170,7 @@ function updateChart(yearByYear, fireNumber, currency) {
   // The engine's fireNumber is a nominal amount required at drawoutAge.
   // Real FIRE Number = Nominal FIRE Number / (1 + inflationRate)^yearsSinceCurrentAge.
   // For a horizontal line across all ages, we plot the value at the drawoutAge in active terms.
-  const activeFireNumber = isReal 
+  const activeFireNumber = isReal
     ? (yearByYear.find(y => y.phase === 'drawout')?.realPortfolio ?? fireNumber)
     : fireNumber;
 
@@ -177,12 +182,14 @@ function updateChart(yearByYear, fireNumber, currency) {
   if (chartInstance) {
     chartInstance.data.labels = labels;
     chartInstance.data.datasets[0].data = portfolioData;
+    chartInstance.data.datasets[0].label = tr.graph.portfolioValue;
     chartInstance.data.datasets[1].data = withdrawalData;
+    chartInstance.data.datasets[1].label = tr.graph.monthlyWithdrawal;
     chartInstance.data.datasets[2].data = fireLineData;
+    chartInstance.data.datasets[2].label = tr.graph.fireTarget;
 
-    const viewStr = isReal ? 'Inflation Adjusted' : 'Gross';
-    chartInstance.options.scales.y.title.text = `Portfolio Value (${viewStr}, ${currency})`;
-    chartInstance.options.scales.y1.title.text = `Monthly Withdrawal (${viewStr}, ${currency})`;
+    chartInstance.options.scales.y.title.text = tr.graph.yAxisPortfolio(viewStr, currency);
+    chartInstance.options.scales.y1.title.text = tr.graph.yAxisWithdrawal(viewStr, currency);
 
     chartInstance.options.scales.x.ticks.color = colors.text;
     chartInstance.options.scales.x.grid.color = colors.grid;
@@ -201,7 +208,7 @@ function updateChart(yearByYear, fireNumber, currency) {
         labels: labels,
         datasets: [
           {
-            label: 'Portfolio Value',
+            label: tr.graph.portfolioValue,
             data: portfolioData,
             borderColor: '#10b981',
             borderWidth: 3,
@@ -224,7 +231,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             tension: 0.1
           },
           {
-            label: 'Monthly Withdrawal (Secondary Axis)',
+            label: tr.graph.monthlyWithdrawal,
             data: withdrawalData,
             fill: 'origin',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -236,7 +243,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             tension: 0.1
           },
           {
-            label: 'FIRE Target',
+            label: tr.graph.fireTarget,
             data: fireLineData,
             borderColor: 'rgba(245, 158, 11, 0.6)',
             borderWidth: 2,
@@ -296,7 +303,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             min: 0,
             title: {
               display: true,
-              text: `Portfolio Value (${isReal ? 'Inflation Adjusted' : 'Gross'}, ${currency})`,
+              text: tr.graph.yAxisPortfolio(viewStr, currency),
               color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans'
@@ -318,7 +325,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             min: 0,
             title: {
               display: true,
-              text: `Monthly Withdrawal (${isReal ? 'Inflation Adjusted' : 'Gross'}, ${currency})`,
+              text: tr.graph.yAxisWithdrawal(viewStr, currency),
               color: colors.text,
               font: {
                 family: 'Plus Jakarta Sans'
@@ -356,7 +363,8 @@ function copyShareLink() {
     additionalRetirementIncome: document.getElementById('additionalRetirementIncome')?.value,
     currency: document.getElementById('currency-selector')?.value,
     drawoutAge: document.getElementById('drawoutAge-slider')?.value,
-    isReal: document.querySelector('#nominal-real-toggle-container .btn-toggle.active')?.getAttribute('data-value') === 'real'
+    isReal: document.querySelector('#nominal-real-toggle-container .btn-toggle.active')?.getAttribute('data-value') === 'real',
+    locale: getLocale(),
   };
 
   try {
@@ -369,14 +377,14 @@ function copyShareLink() {
       const btn = document.getElementById('share-btn');
       if (btn) {
         const originalTitle = btn.getAttribute('title');
-        btn.setAttribute('title', 'Link copied!');
-        
+        btn.setAttribute('title', t().misc.copied);
+
         const originalHTML = btn.innerHTML;
         btn.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span style="font-size: 0.8rem; font-weight: 600; margin-left: 0.25rem; color: #10b981;">Copied!</span>
+          <span style="font-size: 0.8rem; font-weight: 600; margin-left: 0.25rem; color: #10b981;">${t().misc.copied}</span>
         `;
-        
+
         setTimeout(() => {
           btn.innerHTML = originalHTML;
           btn.setAttribute('title', originalTitle);
@@ -414,6 +422,10 @@ function loadFromHash() {
     setVal('deductionRate', inputs.deductionRate);
     setVal('additionalRetirementIncome', inputs.additionalRetirementIncome);
     setVal('currency-selector', inputs.currency);
+
+    if (inputs.locale) {
+      setVal('lang-selector', inputs.locale);
+    }
 
     if (inputs.isReal !== undefined) {
       const toggleContainer = document.getElementById('nominal-real-toggle-container');
@@ -555,8 +567,12 @@ function setTheme(theme) {
 
   const toggleBtn = document.getElementById('theme-toggle');
   if (toggleBtn) {
+    const tr = t();
     toggleBtn.innerHTML = theme === 'light' ? MOON_SVG : SUN_SVG;
-    toggleBtn.setAttribute('title', theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+    toggleBtn.setAttribute(
+      'title',
+      theme === 'light' ? tr.header.switchToDark : tr.header.switchToLight,
+    );
   }
 
   if (chartInstance) {
@@ -582,6 +598,127 @@ function getThemeColors() {
   };
 }
 
+// ─── i18n — DOM update ───────────────────────────────────────────────────────
+
+/**
+ * Apply translations to every element carrying a data-i18n attribute.
+ * The attribute value is a dot-notation path into the t() object.
+ */
+function applyTranslations() {
+  const tr = t();
+
+  // Walk all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const parts = key.split('.');
+    let val = tr;
+    for (const part of parts) {
+      val = val?.[part];
+    }
+    if (typeof val === 'string') {
+      el.textContent = val;
+    }
+  });
+
+  // Update document language attribute
+  document.documentElement.lang = getLocale();
+
+  // Update share-btn title
+  const shareBtn = document.getElementById('share-btn');
+  if (shareBtn) shareBtn.setAttribute('title', tr.header.shareTitle);
+
+  // Re-apply theme button label since setTheme won't be called again
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const toggleBtn = document.getElementById('theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.setAttribute(
+      'title',
+      currentTheme === 'light' ? tr.header.switchToDark : tr.header.switchToLight,
+    );
+  }
+}
+
+// ─── tooltip wiring ──────────────────────────────────────────────────────────
+
+let tooltipHideTimer = null;
+
+function initTooltips() {
+  const portal = document.getElementById('tooltip-portal');
+  if (!portal) return;
+
+  function showTooltip(badge, key) {
+    const tr = t();
+    const text = tr.tooltips[key];
+    if (!text) return;
+
+    clearTimeout(tooltipHideTimer);
+    portal.textContent = text;
+
+    // Position the portal above the badge
+    const rect = badge.getBoundingClientRect();
+    const portalWidth = 280;
+    let left = rect.left + rect.width / 2 - portalWidth / 2;
+    // Clamp to viewport
+    left = Math.max(8, Math.min(left, window.innerWidth - portalWidth - 8));
+
+    const top = rect.top - 8; // a little gap above badge
+
+    portal.style.left = `${left}px`;
+    portal.style.top = `${top}px`;
+    portal.style.transform = 'translateY(-100%) translateY(-4px)';
+    portal.classList.add('tooltip-visible');
+  }
+
+  function hideTooltip() {
+    tooltipHideTimer = setTimeout(() => {
+      portal.classList.remove('tooltip-visible');
+    }, 120);
+  }
+
+  // Delegate events from all info badges
+  document.addEventListener('mouseover', (e) => {
+    const badge = e.target.closest('.info-badge[data-tooltip-key]');
+    if (badge) showTooltip(badge, badge.dataset.tooltipKey);
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const badge = e.target.closest('.info-badge[data-tooltip-key]');
+    if (badge) hideTooltip();
+  });
+
+  document.addEventListener('focusin', (e) => {
+    const badge = e.target.closest('.info-badge[data-tooltip-key]');
+    if (badge) showTooltip(badge, badge.dataset.tooltipKey);
+  });
+
+  document.addEventListener('focusout', (e) => {
+    const badge = e.target.closest('.info-badge[data-tooltip-key]');
+    if (badge) hideTooltip();
+  });
+
+  // Keyboard: Escape closes tooltip
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideTooltip();
+  });
+}
+
+// ─── language selector wiring ────────────────────────────────────────────────
+
+function initLanguageSelector() {
+  const sel = document.getElementById('lang-selector');
+  if (!sel) return;
+
+  // Set the selector to the persisted/loaded locale
+  sel.value = getLocale();
+
+  sel.addEventListener('change', () => {
+    setLocale(sel.value);
+    applyTranslations();
+    // Re-run recalculate so chart labels pick up new locale
+    recalculate();
+  });
+}
+
 // ─── event wiring ────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -589,14 +726,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const slider = document.getElementById('drawoutAge-slider');
   const display = document.getElementById('drawout-age-display');
 
+  // Load locale first so all subsequent UI calls use the right language
+  loadLocale();
+
   // Initialize light/dark theme toggle
   initTheme();
+
   const toggleContainer = document.getElementById('nominal-real-toggle-container');
 
   // Load scenario: URL hash overrides localStorage
   if (!loadFromHash()) {
     loadFromLocalStorage();
   }
+
+  // Apply locale from lang-selector (set by loadFromHash / persisted value)
+  const langSel = document.getElementById('lang-selector');
+  if (langSel && langSel.value) {
+    setLocale(langSel.value);
+  }
+
+  // Apply all translations
+  applyTranslations();
+
+  // Initialize language dropdown
+  initLanguageSelector();
+
+  // Initialize tooltip hover system
+  initTooltips();
 
   // Wire share button click
   const shareBtn = document.getElementById('share-btn');

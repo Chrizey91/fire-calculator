@@ -23,9 +23,18 @@
     <div class="header-container">
       <div class="logo">
         <span class="logo-icon">🔥</span>
-        <h1>FIRE Calculator</h1>
+        <h1 id="app-title">FIRE Calculator</h1>
       </div>
       <div class="header-actions">
+        <!-- Language selector -->
+        <div class="lang-selector-wrap">
+          <select id="lang-selector" class="lang-selector" aria-label="Language">
+            <option value="en">🇬🇧 EN</option>
+            <option value="de">🇩🇪 DE</option>
+            <option value="fr">🇫🇷 FR</option>
+            <option value="es">🇪🇸 ES</option>
+          </select>
+        </div>
         <!-- Share scenario button -->
         <button id="share-btn" class="btn-icon" aria-label="Share scenario" title="Copy share link">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -51,69 +60,96 @@
             <div class="scenario-header">
               <div class="scenario-title-group">
                 <span class="color-indicator" style="background-color: var(--color-primary);"></span>
-                <span class="scenario-name-input" style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 600;">Plan Settings</span>
+                <span class="scenario-name-input" id="plan-settings-title" style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 600;">Plan Settings</span>
               </div>
             </div>
 
             <form class="scenario-form">
-              <div class="form-section-title">Personal Settings</div>
+              <div class="form-section-title" id="section-personal" data-i18n="form.personalSettings">Personal Settings</div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="currentAge">Current Age</label>
+                  <label for="currentAge">
+                    <span data-i18n="form.currentAge">Current Age</span>
+                    <button type="button" class="info-badge" data-tooltip-key="currentAge" aria-label="Info about Current Age">?</button>
+                  </label>
                   <input type="number" id="currentAge" name="currentAge" value="30" min="1" max="99" step="1" required>
                 </div>
                 <div class="input-group">
-                  <label for="currentPortfolioValue">Current Portfolio Value</label>
+                  <label for="currentPortfolioValue">
+                    <span data-i18n="form.currentPortfolioValue">Current Portfolio Value</span>
+                    <button type="button" class="info-badge" data-tooltip-key="currentPortfolioValue" aria-label="Info about Current Portfolio Value">?</button>
+                  </label>
                   <input type="number" id="currentPortfolioValue" name="currentPortfolioValue" value="50000" min="0" step="1000" required>
                 </div>
               </div>
 
-              <div class="form-section-title">Accumulation Phase</div>
+              <div class="form-section-title" id="section-accumulation" data-i18n="form.accumulationPhase">Accumulation Phase</div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="monthlySavings">Monthly Savings</label>
+                  <label for="monthlySavings">
+                    <span data-i18n="form.monthlySavings">Monthly Savings</span>
+                    <button type="button" class="info-badge" data-tooltip-key="monthlySavings" aria-label="Info about Monthly Savings">?</button>
+                  </label>
                   <input type="number" id="monthlySavings" name="monthlySavings" value="1000" min="0" step="100" required>
                 </div>
                 <div class="input-group">
-                  <label for="savingsGrowthRate">Savings Growth Rate (%)</label>
+                  <label for="savingsGrowthRate">
+                    <span data-i18n="form.savingsGrowthRate">Savings Growth Rate (%)</span>
+                    <button type="button" class="info-badge" data-tooltip-key="savingsGrowthRate" aria-label="Info about Savings Growth Rate">?</button>
+                  </label>
                   <input type="number" id="savingsGrowthRate" name="savingsGrowthRate" value="0" min="-50" max="100" step="0.1" required>
                 </div>
               </div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="roi">Annual ROI (%)</label>
+                  <label for="roi">
+                    <span data-i18n="form.roi">Annual ROI (%)</span>
+                    <button type="button" class="info-badge" data-tooltip-key="roi" aria-label="Info about Annual ROI">?</button>
+                  </label>
                   <input type="number" id="roi" name="roi" value="7" min="-50" max="50" step="0.1" required>
                 </div>
               </div>
 
-              <div class="form-section-title">Retirement Target</div>
+              <div class="form-section-title" id="section-retirement" data-i18n="form.retirementTarget">Retirement Target</div>
               <div class="form-row">
                 <div class="input-group">
-                  <label for="targetNetMonthlyIncome">Target Net Monthly Income (Today's Value)</label>
+                  <label for="targetNetMonthlyIncome">
+                    <span data-i18n="form.targetNetMonthlyIncome">Target Net Monthly Income (Today's Value)</span>
+                    <button type="button" class="info-badge" data-tooltip-key="targetNetMonthlyIncome" aria-label="Info about Target Net Monthly Income">?</button>
+                  </label>
                   <input type="number" id="targetNetMonthlyIncome" name="targetNetMonthlyIncome" value="3000" min="0" step="100" required>
                 </div>
                 <div class="input-group">
-                  <label for="deductionRate">Deduction Rate (%)</label>
+                  <label for="deductionRate">
+                    <span data-i18n="form.deductionRate">Deduction Rate (%)</span>
+                    <button type="button" class="info-badge" data-tooltip-key="deductionRate" aria-label="Info about Deduction Rate">?</button>
+                  </label>
                   <input type="number" id="deductionRate" name="deductionRate" value="0" min="0" max="100" step="0.1" required>
                 </div>
               </div>
 
               <details class="advanced-settings-details">
-                <summary>Advanced Settings</summary>
+                <summary id="advanced-settings-summary" data-i18n="form.advancedSettings">Advanced Settings</summary>
                 <div class="advanced-settings-content">
                   <div class="form-row">
                     <div class="input-group">
-                      <label for="inflationRate">Expected Inflation Rate (%)</label>
+                      <label for="inflationRate">
+                        <span data-i18n="form.inflationRate">Expected Inflation Rate (%)</span>
+                        <button type="button" class="info-badge" data-tooltip-key="inflationRate" aria-label="Info about Inflation Rate">?</button>
+                      </label>
                       <input type="number" id="inflationRate" name="inflationRate" value="2" min="-10" max="50" step="0.1" required>
                     </div>
                     <div class="input-group">
-                      <label for="additionalRetirementIncome">Additional Retirement Income (Net/Month)</label>
+                      <label for="additionalRetirementIncome">
+                        <span data-i18n="form.additionalRetirementIncome">Additional Retirement Income (Net/Month)</span>
+                        <button type="button" class="info-badge" data-tooltip-key="additionalRetirementIncome" aria-label="Info about Additional Retirement Income">?</button>
+                      </label>
                       <input type="number" id="additionalRetirementIncome" name="additionalRetirementIncome" value="0" min="0" step="100" required>
                     </div>
                   </div>
                   <div class="form-row">
                     <div class="input-group">
-                      <label for="currency-selector">Currency</label>
+                      <label for="currency-selector" data-i18n="form.currency">Currency</label>
                       <select id="currency-selector" name="currency" class="form-select">
                         <option value="$">USD ($)</option>
                         <option value="€" selected>EUR (€)</option>
@@ -138,30 +174,30 @@
 
           <div class="stat-box" id="stat-fire-number-box">
             <span class="stat-icon">🎯</span>
-            <span class="stat-label">FIRE Number</span>
+            <span class="stat-label" id="stat-fire-number-label" data-i18n="stats.fireNumber">FIRE Number</span>
             <span class="stat-value" id="stat-fire-number">—</span>
-            <span class="stat-note">Portfolio needed at retirement</span>
+            <span class="stat-note" id="stat-fire-number-note" data-i18n="stats.fireNumberNote">Portfolio needed at retirement</span>
           </div>
 
           <div class="stat-box" id="stat-projected-fire-age-box">
             <span class="stat-icon">📅</span>
-            <span class="stat-label">Projected FIRE Age</span>
+            <span class="stat-label" id="stat-projected-fire-age-label" data-i18n="stats.projectedFireAge">Projected FIRE Age</span>
             <span class="stat-value" id="stat-projected-fire-age">—</span>
-            <span class="stat-note">When portfolio crosses FIRE Number</span>
+            <span class="stat-note" id="stat-projected-fire-age-note" data-i18n="stats.projectedFireAgeNote">When portfolio crosses FIRE Number</span>
           </div>
 
           <div class="stat-box" id="stat-portfolio-at-retirement-box">
             <span class="stat-icon">💰</span>
-            <span class="stat-label">Portfolio at Retirement</span>
+            <span class="stat-label" id="stat-portfolio-at-retirement-label" data-i18n="stats.portfolioAtRetirement">Portfolio at Retirement</span>
             <span class="stat-value" id="stat-portfolio-at-retirement">—</span>
-            <span class="stat-note">Actual value at drawout date</span>
+            <span class="stat-note" id="stat-portfolio-at-retirement-note" data-i18n="stats.portfolioAtRetirementNote">Actual value at drawout date</span>
           </div>
 
           <div class="stat-box" id="stat-runway-box">
             <span class="stat-icon">⚠️</span>
-            <span class="stat-label">Runway</span>
+            <span class="stat-label" id="stat-runway-label" data-i18n="stats.runway">Runway</span>
             <span class="stat-value" id="stat-runway">—</span>
-            <span class="stat-note">Years until portfolio depletes</span>
+            <span class="stat-note" id="stat-runway-note" data-i18n="stats.runwayNote">Years until portfolio depletes</span>
           </div>
 
         </div>
@@ -170,10 +206,13 @@
       <!-- Graph & Slider Section -->
       <section class="graph-section card">
         <div class="graph-header">
-          <h3 class="graph-title">Simulation Curve</h3>
+          <div class="graph-title-group">
+            <h3 class="graph-title" id="graph-title" data-i18n="graph.title">Simulation Curve</h3>
+            <button type="button" class="info-badge info-badge--graph" data-tooltip-key="graph" aria-label="Info about the simulation graph">?</button>
+          </div>
           <div class="toggle-group" id="nominal-real-toggle-container">
-            <button type="button" class="btn-toggle active" data-value="real">Inflation Adjusted</button>
-            <button type="button" class="btn-toggle" data-value="nominal">Gross</button>
+            <button type="button" class="btn-toggle active" data-value="real" id="toggle-real" data-i18n="graph.inflationAdjusted">Inflation Adjusted</button>
+            <button type="button" class="btn-toggle" data-value="nominal" id="toggle-nominal" data-i18n="graph.gross">Gross</button>
           </div>
         </div>
         <div class="graph-container">
@@ -182,8 +221,11 @@
         
         <div class="slider-container">
           <div class="slider-header">
-            <span class="slider-label">Retirement Age (Drawout Date)</span>
-            <span class="slider-value-display"><strong id="drawout-age-display">60</strong> years old</span>
+            <div class="slider-label-group">
+              <span class="slider-label" id="slider-label" data-i18n="slider.label">Retirement Age (Drawout Date)</span>
+              <button type="button" class="info-badge" data-tooltip-key="slider" aria-label="Info about the retirement age slider">?</button>
+            </div>
+            <span class="slider-value-display"><strong id="drawout-age-display">60</strong> <span id="slider-years-old" data-i18n="slider.yearsOld">years old</span></span>
           </div>
           <input type="range" id="drawoutAge-slider" min="31" max="99" value="60" step="1" class="custom-slider">
         </div>
@@ -193,8 +235,11 @@
   </main>
 
   <footer class="app-footer">
-    <p>This calculator is for educational purposes only and does not constitute financial advice.</p>
+    <p id="footer-disclaimer" data-i18n="footer.disclaimer">This calculator is for educational purposes only and does not constitute financial advice.</p>
   </footer>
+
+  <!-- Tooltip Portal -->
+  <div id="tooltip-portal" class="tooltip-portal" role="tooltip" aria-live="polite"></div>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
