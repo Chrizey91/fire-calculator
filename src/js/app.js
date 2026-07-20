@@ -138,7 +138,7 @@ function renderStats(result, currency) {
 /**
  * Render or update the Chart.js visualizer.
  */
-function updateChart(yearByYear, fireNumber, currency) {
+function updateChart(yearByYear, fireNumber, currency, showTakeOut = true) {
   const ctx = document.getElementById('portfolio-chart')?.getContext('2d');
   if (!ctx) return;
 
@@ -185,11 +185,13 @@ function updateChart(yearByYear, fireNumber, currency) {
     chartInstance.data.datasets[0].label = tr.graph.portfolioValue;
     chartInstance.data.datasets[1].data = withdrawalData;
     chartInstance.data.datasets[1].label = tr.graph.monthlyWithdrawal;
+    chartInstance.data.datasets[1].hidden = !showTakeOut;
     chartInstance.data.datasets[2].data = fireLineData;
     chartInstance.data.datasets[2].label = tr.graph.fireTarget;
 
     chartInstance.options.scales.y.title.text = tr.graph.yAxisPortfolio(viewStr, currency);
     chartInstance.options.scales.y1.title.text = tr.graph.yAxisWithdrawal(viewStr, currency);
+    chartInstance.options.scales.y1.display = showTakeOut;
 
     chartInstance.options.scales.x.ticks.color = colors.text;
     chartInstance.options.scales.x.grid.color = colors.grid;
@@ -240,7 +242,8 @@ function updateChart(yearByYear, fireNumber, currency) {
             pointRadius: 0,
             pointHoverRadius: 4,
             yAxisID: 'y1',
-            tension: 0.1
+            tension: 0.1,
+            hidden: !showTakeOut
           },
           {
             label: tr.graph.fireTarget,
@@ -321,6 +324,7 @@ function updateChart(yearByYear, fireNumber, currency) {
             }
           },
           y1: {
+            display: showTakeOut,
             position: 'right',
             min: 0,
             title: {
@@ -531,10 +535,11 @@ function loadFromLocalStorage() {
 
 function recalculate() {
   const { engineInputs, currency } = readInputs();
+  const showTakeOut = document.getElementById('show-takeout-toggle')?.checked ?? true;
 
   const result = simulate(engineInputs);
   renderStats(result, currency);
-  updateChart(result.yearByYear, result.fireNumber, currency);
+  updateChart(result.yearByYear, result.fireNumber, currency, showTakeOut);
   saveToLocalStorage();
 }
 
@@ -853,6 +858,12 @@ document.addEventListener('DOMContentLoaded', () => {
         recalculate();
       });
     });
+  }
+
+  // Recalculate when take-out toggle changes
+  const takeOutToggle = document.getElementById('show-takeout-toggle');
+  if (takeOutToggle) {
+    takeOutToggle.addEventListener('change', recalculate);
   }
 
   // Initial calculation

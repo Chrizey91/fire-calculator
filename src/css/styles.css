@@ -834,6 +834,97 @@ input[type="number"] {
   box-shadow: 0 2px 8px var(--color-primary-glow);
 }
 
+/* Graph header controls: houses the nominal/real toggle + take-out switch */
+.graph-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Take-Out Toggle Switch ─────────────────────────────────── */
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.toggle-switch-label:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-color-focus);
+}
+
+.toggle-switch-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.toggle-switch-label:has(input:checked) .toggle-switch-text {
+  color: var(--text-main);
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-switch-thumb {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 100px;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: pointer;
+}
+
+.toggle-switch-thumb::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  opacity: 0.5;
+}
+
+.toggle-switch input:checked + .toggle-switch-thumb {
+  background: var(--color-danger);
+  box-shadow: 0 0 8px var(--color-danger-glow);
+}
+
+.toggle-switch input:checked + .toggle-switch-thumb::after {
+  transform: translateX(14px);
+  opacity: 1;
+}
+
+[data-theme="light"] .toggle-switch-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .graph-container {
   position: relative;
   width: 100%;

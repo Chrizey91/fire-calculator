@@ -226,9 +226,18 @@
             <h3 class="graph-title" id="graph-title" data-i18n="graph.title">Simulation Curve</h3>
             <button type="button" class="info-badge info-badge--graph" data-tooltip-key="graph" aria-label="Info about the simulation graph">?</button>
           </div>
-          <div class="toggle-group" id="nominal-real-toggle-container">
-            <button type="button" class="btn-toggle active" data-value="real" id="toggle-real" data-i18n="graph.inflationAdjusted">Inflation Adjusted</button>
-            <button type="button" class="btn-toggle" data-value="nominal" id="toggle-nominal" data-i18n="graph.gross">Gross</button>
+          <div class="graph-header-controls">
+            <div class="toggle-group" id="nominal-real-toggle-container">
+              <button type="button" class="btn-toggle active" data-value="real" id="toggle-real" data-i18n="graph.inflationAdjusted">Inflation Adjusted</button>
+              <button type="button" class="btn-toggle" data-value="nominal" id="toggle-nominal" data-i18n="graph.gross">Gross</button>
+            </div>
+            <label class="toggle-switch-label" id="show-takeout-label" title="Show or hide the monthly take-out (withdrawal) amount">
+              <span class="toggle-switch-text" data-i18n="graph.showTakeOut">Show Take-Out</span>
+              <span class="toggle-switch">
+                <input type="checkbox" id="show-takeout-toggle" checked aria-label="Show take-out amount">
+                <span class="toggle-switch-thumb"></span>
+              </span>
+            </label>
           </div>
         </div>
         <div class="graph-container">
