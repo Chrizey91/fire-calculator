@@ -274,6 +274,10 @@ function updateChart(yearByYear, fireNumber, currency, showTakeOut = true) {
               font: {
                 family: 'Plus Jakarta Sans',
                 weight: '500'
+              },
+              filter: (legendItem, chartData) => {
+                const dataset = chartData.datasets[legendItem.datasetIndex];
+                return !dataset.hidden;
               }
             }
           },
